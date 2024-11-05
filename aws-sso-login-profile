@@ -28,7 +28,29 @@ do
         aws sso login --profile $login2
         echo "\n\nList active profile:\n"
         aws configure list --profile $login2
+
+        # Configuring as default aws profile
+        # Assuming your shell interpreter is zsh, if you use bash you can configure the .bashrc file
+        
+        grep -q AWS_DEFAULT_PROFILE $HOME/.zshrc
+        if [[ $(echo $?) != 0 ]]; then
+            echo "# Define AWS Default Profile" >> $HOME/.zshrc
+            echo "export AWS_DEFAULT_PROFILE=$login2" >> $HOME/.zshrc
+        else
+            lstr=$(grep AWS_DEFAULT_PROFILE $HOME/.zshrc)
+            newprofile="export AWS_DEFAULT_PROFILE=$login2"
+            sed -i '' "s~$lstr~$newprofile~g" $HOME/.zshrc
+        fi
+        
+        echo  "\n\nThe .zshrc file has been updated with the line:"
+        echo  "\n\texport AWS_DEFAULT_PROFILE=$login2\n"
+        echo  "\nPlease run the following command to set the new"
+        echo  "account profile as the default profile:"
+        echo  "\n\tsource $HOME/.zshrc\n"
+        
+        # Cleaning tmp file
         rm -f /tmp/aws-profiles-list-tempfile-0001
+
         exit 0
     fi
 done
