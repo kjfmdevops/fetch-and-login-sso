@@ -1,0 +1,34 @@
+
+#!/bin/bash
+
+# This bash script seeks to simplify the commands to
+# fetch and connect to a profile previously configured in AWS-SSO-LOGIN
+
+# By: Kevin J. Figueroa M
+# Nov 5, 2024
+
+function listp(){
+    aws configure list-profiles > /tmp/aws-profiles-list-tempfile-0001
+    echo "\nListing AWS-SSO Profiles:\n\n$(cat -n /tmp/aws-profiles-list-tempfile-0001)\n"
+    opn=$(wc -l /tmp/aws-profiles-list-tempfile-0001 |awk '{print $1}')
+}
+
+option=0
+while :
+do
+    listp
+    read -n1 -p "Select the profile you want to access [1.."$opn"]: " option; echo ""
+    num="^[1-$opn]+$"
+    if ! [[ $option =~ $num ]]; then
+        echo "\nOption not valid\nmust be a number between 1 ~ $opn\n"
+        exit 1
+    else
+        login2=$(cat -n /tmp/aws-profiles-list-tempfile-0001 |grep $option |awk '{print $2}')
+        echo "\nSSO-Login to: "$login2; echo "\n"
+        aws sso login --profile $login2
+        echo "\n\nList active profile:\n"
+        aws configure list --profile $login2
+        rm -f /tmp/aws-profiles-list-tempfile-0001
+        exit 0
+    fi
+done
